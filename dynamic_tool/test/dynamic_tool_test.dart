@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:flutter_dynamic_tool/flutter_dynamic_tool.dart';
+import 'package:dynamic_tool/dynamic_tool.dart';
 
 void main() {
   test('adds one to input values', () {
