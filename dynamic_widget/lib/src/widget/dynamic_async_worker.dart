@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
 typedef DynamicAsyncWorkerData<T> = void Function(T data);
-typedef DynamicAsyncWorkerError = void Function(Object e);
+typedef DynamicAsyncWorkerError =
+    void Function(Object e, StackTrace stackTrace);
 
-typedef DynamicAsyncWorkerLoadingBuilder = Widget Function(BuildContext context, bool loading);
+typedef DynamicAsyncWorkerLoadingBuilder =
+    Widget Function(BuildContext context, bool loading);
 
 class DynamicAsyncWorker {
   final _asyncWorking = ValueNotifier(false);
@@ -26,15 +28,17 @@ class DynamicAsyncWorker {
     }
   }
 
-  void asyncWorker<T>(Future<T> Function() worker,
-      {DynamicAsyncWorkerData<T>? onData,
-        DynamicAsyncWorkerError? onError}) async {
+  Future<void> asyncWorker<T>(
+    Future<T> Function() worker, {
+    DynamicAsyncWorkerData<T>? onData,
+    DynamicAsyncWorkerError? onError,
+  }) async {
     showLoading();
     try {
       final T result = await worker();
       onData?.call(result);
-    } catch (e) {
-      onError?.call(e);
+    } catch (e, stackTrace) {
+      onError?.call(e, stackTrace);
     } finally {
       hideLoading();
     }
@@ -70,22 +74,26 @@ class DynamicAsyncWorkerWidget extends StatelessWidget {
     final child = this.child;
     final style =
         (Theme.of(context).extension<DynamicAsyncAsyncWorkerStyle>() ??
-                const DynamicAsyncAsyncWorkerStyle())
-            .copyWith(
-      showDuration: showDuration,
-      hideDuration: hideDuration,
-      curve: curve,
-      loadingBuilder: loadingBuilder,
-    ) as DynamicAsyncAsyncWorkerStyle;
+                    const DynamicAsyncAsyncWorkerStyle())
+                .copyWith(
+                  showDuration: showDuration,
+                  hideDuration: hideDuration,
+                  curve: curve,
+                  loadingBuilder: loadingBuilder,
+                )
+            as DynamicAsyncAsyncWorkerStyle;
 
-    return Stack(children: [
-      if (child != null) child,
-      ValueListenableBuilder(
+    return Stack(
+      children: [
+        if (child != null) child,
+        ValueListenableBuilder(
           valueListenable: worker._asyncWorking,
           builder: (BuildContext context, bool value, Widget? child) {
             return _AsyncWorkerWidget(loading: value, style: style);
-          })
-    ]);
+          },
+        ),
+      ],
+    );
   }
 }
 
@@ -109,9 +117,10 @@ class _AsyncWorkerWidgetState extends State<_AsyncWorkerWidget>
     super.initState();
 
     _controller = AnimationController(
-        vsync: this,
-        duration: widget.style.showDuration,
-        reverseDuration: widget.style.hideDuration);
+      vsync: this,
+      duration: widget.style.showDuration,
+      reverseDuration: widget.style.hideDuration,
+    );
     _animation = CurvedAnimation(parent: _controller, curve: widget.style.curve)
       ..addListener(_animationListener);
     if (widget.loading) {
@@ -173,29 +182,32 @@ class DynamicAsyncAsyncWorkerStyle
       const CircularProgressIndicator.adaptive();
 
   static void defaultErrorBuilder(BuildContext context, Object e) => showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          icon: Icon(
-            Icons.error_outline,
-            color: Theme.of(context).colorScheme.error,
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        icon: Icon(
+          Icons.error_outline,
+          color: Theme.of(context).colorScheme.error,
+        ),
+        content: Text(e.toString()),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text('Ok'),
           ),
-          content: Text(e.toString()),
-          actions: [
-            TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: const Text('Ok'))
-          ],
-        );
-      });
+        ],
+      );
+    },
+  );
 
-  const DynamicAsyncAsyncWorkerStyle(
-      {this.showDuration = const Duration(milliseconds: defaultShowDelayMs),
-      this.hideDuration = const Duration(milliseconds: defaultHideDelayMs),
-      this.curve = Curves.easeInOut,
-      this.loadingBuilder = defaultLoadingBuilder});
+  const DynamicAsyncAsyncWorkerStyle({
+    this.showDuration = const Duration(milliseconds: defaultShowDelayMs),
+    this.hideDuration = const Duration(milliseconds: defaultHideDelayMs),
+    this.curve = Curves.easeInOut,
+    this.loadingBuilder = defaultLoadingBuilder,
+  });
 
   final Duration showDuration;
   final Duration hideDuration;
@@ -209,17 +221,18 @@ class DynamicAsyncAsyncWorkerStyle
     Duration? hideDuration,
     Curve? curve,
     DynamicAsyncWorkerLoadingBuilder? loadingBuilder,
-  }) =>
-      DynamicAsyncAsyncWorkerStyle(
-        showDuration: showDuration ?? this.showDuration,
-        hideDuration: hideDuration ?? this.hideDuration,
-        curve: curve ?? this.curve,
-        loadingBuilder: loadingBuilder ?? this.loadingBuilder,
-      );
+  }) => DynamicAsyncAsyncWorkerStyle(
+    showDuration: showDuration ?? this.showDuration,
+    hideDuration: hideDuration ?? this.hideDuration,
+    curve: curve ?? this.curve,
+    loadingBuilder: loadingBuilder ?? this.loadingBuilder,
+  );
 
   @override
   ThemeExtension<DynamicAsyncAsyncWorkerStyle> lerp(
-      covariant ThemeExtension<DynamicAsyncAsyncWorkerStyle>? other, double t) {
+    covariant ThemeExtension<DynamicAsyncAsyncWorkerStyle>? other,
+    double t,
+  ) {
     return this;
   }
 }
