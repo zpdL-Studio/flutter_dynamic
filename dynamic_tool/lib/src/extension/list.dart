@@ -29,6 +29,17 @@ extension ListExtension<E> on List<E> {
     }
     return map;
   }
+
+  List<E> dynamicSeparate(E separate) {
+    final results = <E>[];
+    for (final item in this) {
+      if (results.isNotEmpty) {
+        results.add(separate);
+      }
+      results.add(item);
+    }
+    return results;
+  }
 }
 
 class DynamicMapList<K, V> {
