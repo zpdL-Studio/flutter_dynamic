@@ -4,7 +4,7 @@ import 'package:flutter/widgets.dart';
 class DynamicLayoutContainer extends StatelessWidget {
   const DynamicLayoutContainer({
     super.key,
-    required this.backgroundColor,
+    this.backgroundColor,
     this.withDevicePadding,
     this.decoration,
     this.foregroundDecoration,
