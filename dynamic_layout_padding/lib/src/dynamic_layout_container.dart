@@ -4,12 +4,15 @@ import 'package:flutter/widgets.dart';
 class DynamicLayoutContainer extends StatelessWidget {
   const DynamicLayoutContainer({
     super.key,
+    this.alignment,
     this.backgroundColor,
     this.withDevicePadding,
     this.decoration,
     this.foregroundDecoration,
     required this.child,
   });
+
+  final AlignmentGeometry? alignment;
 
   final Color? backgroundColor;
   final bool? withDevicePadding;
@@ -29,7 +32,7 @@ class DynamicLayoutContainer extends StatelessWidget {
     return Container(
       color: backgroundColor,
       padding: EdgeInsets.symmetric(horizontal: layoutPadding + devicePadding),
-      alignment: AlignmentDirectional.center,
+      alignment: alignment,
       decoration: decoration,
       foregroundDecoration: foregroundDecoration,
       child: child,
