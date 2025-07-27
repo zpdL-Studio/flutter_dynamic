@@ -9,6 +9,13 @@ class DynamicLayoutPadding<T extends DynamicDevice> extends StatelessWidget {
     )!.device;
   }
 
+  static double widthOf<T extends DynamicDevice>(BuildContext context) {
+    return InheritedModel.inheritFrom<_DynamicLayoutPadding<T>>(
+      context,
+      aspect: _DynamicLayoutPaddingDependencies.layoutWidth,
+    )!.layoutWidth;
+  }
+
   static double heightOf<T extends DynamicDevice>(BuildContext context) {
     return InheritedModel.inheritFrom<_DynamicLayoutPadding<T>>(
       context,
@@ -23,11 +30,11 @@ class DynamicLayoutPadding<T extends DynamicDevice> extends StatelessWidget {
     )!.deviceWidth;
   }
 
-  static double layoutWidthOf<T extends DynamicDevice>(BuildContext context) {
+  static double devicePaddingOf<T extends DynamicDevice>(BuildContext context) {
     return InheritedModel.inheritFrom<_DynamicLayoutPadding<T>>(
       context,
-      aspect: _DynamicLayoutPaddingDependencies.layoutWidth,
-    )!.layoutWidth;
+      aspect: _DynamicLayoutPaddingDependencies.devicePadding,
+    )!.devicePadding;
   }
 
   static double layoutPaddingOf<T extends DynamicDevice>(BuildContext context) {
@@ -37,12 +44,10 @@ class DynamicLayoutPadding<T extends DynamicDevice> extends StatelessWidget {
     )!.layoutPadding;
   }
 
-  static bool shownKeyboardOf<T extends DynamicDevice>(BuildContext context) {
-    return InheritedModel.inheritFrom<_DynamicLayoutPadding<T>>(
-      context,
-      aspect: _DynamicLayoutPaddingDependencies.shownKeyboard,
-    )!.shownKeyboard;
+  static double paddingOf<T extends DynamicDevice>(BuildContext context) {
+    return layoutPaddingOf<T>(context) + devicePaddingOf<T>(context);
   }
+
 
   const DynamicLayoutPadding({
     super.key,
@@ -55,7 +60,6 @@ class DynamicLayoutPadding<T extends DynamicDevice> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final shownKeyboard = MediaQuery.of(context).viewInsets.bottom > 0;
     return LayoutBuilder(
       builder: (context, constraints) {
         final compute = _DynamicLayoutCompute.fromDevice(
@@ -67,9 +71,9 @@ class DynamicLayoutPadding<T extends DynamicDevice> extends StatelessWidget {
           device: compute.device,
           height: constraints.maxHeight,
           deviceWidth: compute.deviceWidth,
+          devicePadding: compute.device.padding,
           layoutWidth: compute.layoutWidth,
           layoutPadding: compute.layoutPadding,
-          shownKeyboard: shownKeyboard,
           child: child,
         );
       },
@@ -130,9 +134,9 @@ enum _DynamicLayoutPaddingDependencies {
   device,
   height,
   deviceWidth,
+  devicePadding,
   layoutWidth,
   layoutPadding,
-  shownKeyboard,
 }
 
 class _DynamicLayoutPadding<T extends DynamicDevice>
@@ -140,17 +144,17 @@ class _DynamicLayoutPadding<T extends DynamicDevice>
   final T device;
   final double height;
   final double deviceWidth;
+  final double devicePadding;
   final double layoutWidth;
   final double layoutPadding;
-  final bool shownKeyboard;
 
   const _DynamicLayoutPadding({
     required this.device,
     required this.height,
     required this.deviceWidth,
+    required this.devicePadding,
     required this.layoutWidth,
     required this.layoutPadding,
-    required this.shownKeyboard,
     required super.child,
   });
 
@@ -159,9 +163,9 @@ class _DynamicLayoutPadding<T extends DynamicDevice>
     return device != oldWidget.device ||
         height != oldWidget.height ||
         deviceWidth != oldWidget.deviceWidth ||
+        devicePadding != oldWidget.devicePadding ||
         layoutWidth != oldWidget.layoutWidth ||
-        layoutPadding != oldWidget.layoutPadding ||
-        shownKeyboard != oldWidget.shownKeyboard;
+        layoutPadding != oldWidget.layoutPadding;
   }
 
   @override
@@ -190,6 +194,11 @@ class _DynamicLayoutPadding<T extends DynamicDevice>
             return true;
           }
           break;
+        case _DynamicLayoutPaddingDependencies.devicePadding:
+          if (devicePadding != oldWidget.devicePadding) {
+            return true;
+          }
+          break;
         case _DynamicLayoutPaddingDependencies.layoutWidth:
           if (layoutWidth != oldWidget.layoutWidth) {
             return true;
@@ -197,11 +206,6 @@ class _DynamicLayoutPadding<T extends DynamicDevice>
           break;
         case _DynamicLayoutPaddingDependencies.layoutPadding:
           if (layoutPadding != oldWidget.layoutPadding) {
-            return true;
-          }
-          break;
-        case _DynamicLayoutPaddingDependencies.shownKeyboard:
-          if (shownKeyboard != oldWidget.shownKeyboard) {
             return true;
           }
           break;
