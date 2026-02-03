@@ -12,8 +12,8 @@ class DynamicLayoutPadding<T extends DynamicDevice> extends StatelessWidget {
   static double widthOf<T extends DynamicDevice>(BuildContext context) {
     return InheritedModel.inheritFrom<_DynamicLayoutPadding<T>>(
       context,
-      aspect: _DynamicLayoutPaddingDependencies.layoutWidth,
-    )!.layoutWidth;
+      aspect: _DynamicLayoutPaddingDependencies.width,
+    )!.width;
   }
 
   static double heightOf<T extends DynamicDevice>(BuildContext context) {
@@ -23,18 +23,11 @@ class DynamicLayoutPadding<T extends DynamicDevice> extends StatelessWidget {
     )!.height;
   }
 
-  static double deviceWidthOf<T extends DynamicDevice>(BuildContext context) {
+  static double layoutWidthOf<T extends DynamicDevice>(BuildContext context) {
     return InheritedModel.inheritFrom<_DynamicLayoutPadding<T>>(
       context,
-      aspect: _DynamicLayoutPaddingDependencies.deviceWidth,
-    )!.deviceWidth;
-  }
-
-  static double devicePaddingOf<T extends DynamicDevice>(BuildContext context) {
-    return InheritedModel.inheritFrom<_DynamicLayoutPadding<T>>(
-      context,
-      aspect: _DynamicLayoutPaddingDependencies.devicePadding,
-    )!.devicePadding;
+      aspect: _DynamicLayoutPaddingDependencies.layoutWidth,
+    )!.layoutWidth;
   }
 
   static double layoutPaddingOf<T extends DynamicDevice>(BuildContext context) {
@@ -43,11 +36,6 @@ class DynamicLayoutPadding<T extends DynamicDevice> extends StatelessWidget {
       aspect: _DynamicLayoutPaddingDependencies.layoutPadding,
     )!.layoutPadding;
   }
-
-  static double paddingOf<T extends DynamicDevice>(BuildContext context) {
-    return layoutPaddingOf<T>(context) + devicePaddingOf<T>(context);
-  }
-
 
   const DynamicLayoutPadding({
     super.key,
@@ -69,11 +57,10 @@ class DynamicLayoutPadding<T extends DynamicDevice> extends StatelessWidget {
 
         return _DynamicLayoutPadding(
           device: compute.device,
+          width: constraints.maxWidth,
           height: constraints.maxHeight,
-          deviceWidth: compute.deviceWidth,
-          devicePadding: compute.device.padding,
-          layoutWidth: compute.layoutWidth,
-          layoutPadding: compute.layoutPadding,
+          layoutWidth: compute.width,
+          layoutPadding: compute.padding,
           child: child,
         );
       },
@@ -83,37 +70,33 @@ class DynamicLayoutPadding<T extends DynamicDevice> extends StatelessWidget {
 
 class _DynamicLayoutCompute {
   final DynamicDevice device;
-  final double deviceWidth;
-  final double layoutWidth;
-  final double layoutPadding;
+  final double width;
+  final double padding;
 
   _DynamicLayoutCompute._({
     required this.device,
-    required this.deviceWidth,
-    required this.layoutWidth,
-    required this.layoutPadding,
+    required this.width,
+    required this.padding,
   });
 
   factory _DynamicLayoutCompute.fromDevice(
     List<DynamicDevice> devices,
-    double layoutWidth,
+    double maxWidth,
   ) {
-    final device = _computeDevice(devices, layoutWidth);
-    final remainLayoutWidth = layoutWidth - device.width;
-    if (remainLayoutWidth < 0) {
+    final device = _computeDevice(devices, maxWidth);
+    final remainWidth = maxWidth - device.width;
+    if (remainWidth < 0) {
       return _DynamicLayoutCompute._(
         device: device,
-        deviceWidth: layoutWidth,
-        layoutWidth: layoutWidth,
-        layoutPadding: 0,
+        width: maxWidth,
+        padding: 0,
       );
     }
 
     return _DynamicLayoutCompute._(
       device: device,
-      deviceWidth: layoutWidth - remainLayoutWidth,
-      layoutWidth: layoutWidth,
-      layoutPadding: remainLayoutWidth / 2,
+      width: maxWidth - remainWidth,
+      padding: remainWidth / 2,
     );
   }
 
@@ -122,7 +105,7 @@ class _DynamicLayoutCompute {
     double width,
   ) {
     for (final device in devices) {
-      if (width < device.width) {
+      if (width <= device.width) {
         return device;
       }
     }
@@ -132,9 +115,8 @@ class _DynamicLayoutCompute {
 
 enum _DynamicLayoutPaddingDependencies {
   device,
+  width,
   height,
-  deviceWidth,
-  devicePadding,
   layoutWidth,
   layoutPadding,
 }
@@ -142,17 +124,15 @@ enum _DynamicLayoutPaddingDependencies {
 class _DynamicLayoutPadding<T extends DynamicDevice>
     extends InheritedModel<_DynamicLayoutPaddingDependencies> {
   final T device;
+  final double width;
   final double height;
-  final double deviceWidth;
-  final double devicePadding;
   final double layoutWidth;
   final double layoutPadding;
 
   const _DynamicLayoutPadding({
     required this.device,
+    required this.width,
     required this.height,
-    required this.deviceWidth,
-    required this.devicePadding,
     required this.layoutWidth,
     required this.layoutPadding,
     required super.child,
@@ -161,9 +141,8 @@ class _DynamicLayoutPadding<T extends DynamicDevice>
   @override
   bool updateShouldNotify(covariant _DynamicLayoutPadding oldWidget) {
     return device != oldWidget.device ||
+        width != oldWidget.width ||
         height != oldWidget.height ||
-        deviceWidth != oldWidget.deviceWidth ||
-        devicePadding != oldWidget.devicePadding ||
         layoutWidth != oldWidget.layoutWidth ||
         layoutPadding != oldWidget.layoutPadding;
   }
@@ -184,18 +163,13 @@ class _DynamicLayoutPadding<T extends DynamicDevice>
             return true;
           }
           break;
+        case _DynamicLayoutPaddingDependencies.width:
+          if (width != oldWidget.width) {
+            return true;
+          }
+          break;
         case _DynamicLayoutPaddingDependencies.height:
           if (height != oldWidget.height) {
-            return true;
-          }
-          break;
-        case _DynamicLayoutPaddingDependencies.deviceWidth:
-          if (deviceWidth != oldWidget.deviceWidth) {
-            return true;
-          }
-          break;
-        case _DynamicLayoutPaddingDependencies.devicePadding:
-          if (devicePadding != oldWidget.devicePadding) {
             return true;
           }
           break;

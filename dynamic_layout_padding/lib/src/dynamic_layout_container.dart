@@ -24,14 +24,10 @@ class DynamicLayoutContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final layoutPadding = DynamicLayoutPadding.layoutPaddingOf(context);
-    final devicePadding =
-        withDevicePadding == true
-            ? DynamicLayoutPadding.deviceOf(context).padding
-            : 0;
 
     return Container(
+      padding: EdgeInsets.symmetric(horizontal: layoutPadding),
       color: backgroundColor,
-      padding: EdgeInsets.symmetric(horizontal: layoutPadding + devicePadding),
       alignment: alignment,
       decoration: decoration,
       foregroundDecoration: foregroundDecoration,
